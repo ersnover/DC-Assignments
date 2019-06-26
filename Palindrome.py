@@ -10,6 +10,9 @@ def decision(string, stringOG):
         if string[i] != string[len(string)-1-i]:
             pal = False
             break
+    return pal
+
+def PrintDecision(pal):
     if pal == True:
         print(f"{stringOG} is a palindrome")
     else:
@@ -19,4 +22,5 @@ def decision(string, stringOG):
         
 
 string, stringOG = getstring()
-decision(string, stringOG)
+outcome = decision(string, stringOG)
+PrintDecision(outcome)
