@@ -14,10 +14,14 @@ def decideprime(num):
                 if num % i == 0:
                     break
             else: isprime = True
+    return num, isprime
+
+def PrintDec(num, isprime):
     if isprime == True:
         print(f"{num} is prime")
     else:
         print(f"{num} is not prime")
 
 number = getnum()
-decideprime(number)
+num, isprime = decideprime(number)
+PrintDec(num, isprime)
