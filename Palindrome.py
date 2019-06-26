@@ -8,11 +8,12 @@ def decision(string, stringOG):
     pal = True
     for i in range(0,len(string)):
         if string[i] != string[len(string)-1-i]:
-            print(f"{stringOG} is not a palindrome")
             pal = False
             break
     if pal == True:
         print(f"{stringOG} is a palindrome")
+    else:
+        print(f"{stringOG} is not a palindrome")
     
     
         
