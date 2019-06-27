@@ -20,7 +20,7 @@ def GetChoice():
 
 
 def Menu():
-    print("\n\n......Welcome to Eric's Sweet Ass To-Do List......\n")
+    print("\n\n......Welcome to Eric's To-Do List......\n")
     choice = GetChoice()
     if choice == "1":
         AddTask()
