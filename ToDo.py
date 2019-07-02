@@ -252,6 +252,5 @@ def ModStat(choice):
 
 
 taskList = importJSON()
-#ViewTask()
 Menu()
 
