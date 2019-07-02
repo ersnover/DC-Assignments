@@ -1,16 +1,36 @@
 
+import json
+
 class Tasks:
     def __init__(self, name, priority, status = "Incomplete"):
         self.name = name
         self.priority = priority
         self.status = status
 
+    def MakeDict(self):
+        new_dict = {
+            "name": self.name,
+            "priority": self.priority,
+            "status": self.status
+            }
+        return new_dict
 
+def writeJSON():
+     with open("ToDoStore.json","w") as file:
+        json.dump(taskList,file)
     
+def importJSON():
+    try:
+        with open("ToDoStore.json") as file:
+            taskList = json.load(file)
+    except json.decoder.JSONDecodeError:
+        taskList = []
+    return taskList
+
 
 def GetChoice():
     choice = None
-    print("Choose an option:\n1 -- Add Task\n2 -- Modify Task\n3 -- Delete Task\n4 -- View All Tasks\nq -- Quit")
+    print("Choose an option:\n1 -- Add Task\n2 -- Modify Task\n3 -- Delete Task\n4 -- View All Tasks\nq -- Quit\n")
     choice = input(">> ")
     while choice != 'q' and choice != 'Q':
         if choice == "1" or choice == "2" or choice == "3" or choice == "4":
@@ -20,9 +40,6 @@ def GetChoice():
             choice = input(">> ")
     quit()
 
-def TaskListInit():
-    taskList = []
-    return taskList
 
 def Menu():
     print("\n\n......Welcome to Eric's To-Do List......\n")
@@ -46,9 +63,10 @@ def AddTask():
     while priority != "high" and priority != "med" and priority != "low":
         print("Please enter priority as high, med, or low")
         priority = input("Enter priority (high/med/low): ")
-    index = len(taskList)
-    taskList.append(Tasks(name,priority))
-    print("\nAdded " + taskList[index].name + f" with priority = {priority}.\n")
+    task = Tasks(name,priority)
+    taskList.append(task.MakeDict())
+    print(f"\nAdded {name} with priority = {priority}.\n")
+    writeJSON()
     Menu()
 
 # DELETE FUNCTIONS
@@ -57,10 +75,11 @@ def DeleteTask():
     DelViewTask()
     choice, confirm = GetDelChoice()
     if confirm == "y":
-        print(taskList[choice].name + " was deleted.")
+        print(taskList[choice]["name"] + " was deleted.")
         del taskList[choice]
     elif confirm == "n":
-        print(taskList[choice].name + " was not deleted.")
+        print(taskList[choice]["name"] + " was not deleted.")
+    writeJSON()
     Menu()
     
 
@@ -80,10 +99,12 @@ def GetDelChoice():
                 pass
     while choice < 0 or choice > (len(taskList) -1):
         choice = int(input("Selected index not in range. Enter index to delete: "))
-    confirm = input("\nDelete task " + taskList[choice].name + f" at index {choice}? (y/n): ")
+    confirm = input("\nDelete task " + taskList[choice]["name"] + f" at index {choice}? (y/n): ")
     while confirm != 'y' and confirm != 'n':
         confirm = input("\nEnter (y/n): ")
     return choice, confirm
+
+#Delete menu modification of ViewTask() (by default doesn't offer a return to menu option)
 
 def DelViewTask():
     print("\n.......Task List.......\n")
@@ -97,8 +118,31 @@ def DelViewTask():
         Menu()
     index = 0
     for task in taskList:
-        print(f"{index} - " + taskList[index].name + " --- " + taskList[index].priority + " --- " + taskList[index].status)
+        PrintTask(index,task)
         index +=1
+
+#justify function for PrintTask()
+
+def GetMaxLen(variant):
+    if variant == "i":
+        maxLen = len(str(len(taskList)))
+        maxLen += 2
+    else:
+        maxLen = len(taskList[0][variant])
+        for i in taskList:
+            if len(i[variant]) > maxLen:
+                maxLen = len(i[variant])
+        maxLen += 3
+    return maxLen
+
+def PrintTask(index, task):
+    maxIndex = GetMaxLen("i")
+    maxName = GetMaxLen("name")
+    maxPri = GetMaxLen("priority")
+    index_space = "-" * (maxIndex - len(str(index)))
+    task_space ="-" * (maxName - len(task["name"]))
+    pri_space ="-" * (maxPri - len(task["priority"]))
+    print(f'{str(index)} {index_space} {str(taskList[index]["name"])} {task_space} {str(taskList[index]["priority"])} {pri_space} {str(taskList[index]["status"])}')
 
 
 def ViewTask():
@@ -109,12 +153,14 @@ def ViewTask():
         print("\nYou don't have any tasks yet\n")
     index = 0
     for task in taskList:
-        print(f"{index} - " + taskList[index].name + " --- " + taskList[index].priority + " --- " + taskList[index].status)
+        PrintTask(index,task)
         index +=1
     confirm = input("\nPress m to return to menu.\n")
     while confirm != 'm' and confirm != 'M':
         confirm = input("\nPress m to return to menu.\n")
     Menu()
+
+
 
 #  MODIFY FUNCTIONS
 def ModifyTask():
@@ -147,11 +193,12 @@ def GetModChoice():
                 pass
     while choice < 0 or choice > (len(taskList) -1):
         choice = int(input("Selected index not in range. Enter index to modify: "))
+    print("\nModifying " + taskList[choice]["name"])
     return choice
 
 def GetModOption():
     option = None
-    print("\nWhat would you like to modify?\n1 -- Task Name\n2 -- Task Priority\n3 -- Task Status\nb -- Back\nm -- Main Menu")
+    print("What would you like to modify?\n\n1 -- Task Name\n2 -- Task Priority\n3 -- Task Status\nb -- Back\nm -- Main Menu")
     option = input(">>")
     while option != 'b' and option != 'B' and option != 'm' and option != 'M':
         if option == "1" or option == "2" or option == "3":
@@ -165,7 +212,8 @@ def GetModOption():
 
 def ModName(choice):
     newName = input("Enter new name: ")
-    taskList[choice].name = newName
+    taskList[choice]["name"] = newName
+    writeJSON()
     ModifyTask()
 
 def ModPri(choice):
@@ -173,28 +221,37 @@ def ModPri(choice):
     while newPri != "high" and newPri != "med" and newPri != "low":
         print("Please enter priority as high, med, or low")
         newPri = input("Enter new priority (high/med/low): ")
-    taskList[choice].priority = newPri
+    taskList[choice]["priority"] = newPri
+    writeJSON()
     ModifyTask()
 
 def ModStat(choice):
-    newStat = input("Enter new status (I/C): ")
-    while newStat != "i" and newStat != "I" and newStat != "c" and newStat != "C":
-        print("Please enter status as I for Incomplete or C for Complete")
-        newStat = input("Enter new status (I/C): ")
-    if newStat.lower() == "i":
-        taskList[choice].status = "Incomplete"
-    elif newStat.lower() == "c":
-        taskList[choice].status = "Complete"
+    if taskList[choice]["status"] == "Incomplete":
+        confirm = input("Mark " + taskList[choice]["name"] + " as Complete? (y/n): ")
+        while confirm != 'y' and confirm != 'Y' and confirm != 'n' and confirm != 'N':
+            confirm = input("\nEnter (y/n): ")
+        if confirm == 'y':
+            taskList[choice]["status"] = "Complete"
+            print(taskList[choice]["name"] + " completed.")
+        elif confirm == 'n':
+            print("Changes not saved")
+    else:
+        confirm = input("Mark " + taskList[choice]["name"] + " as Incomplete? (y/n): ")
+        while confirm != 'y' and confirm != 'Y' and confirm != 'n' and confirm != 'N':
+            confirm = input("\nEnter (y/n): ")
+        if confirm == 'y':
+            taskList[choice]["status"] = "Incomplete"
+            print("Changes Saved.")
+        elif confirm == 'n':
+            print("Changes not saved.")
+    writeJSON()
     ModifyTask()
+        
 
 
 
 
-# run = Tasks('run', 'high')
-# mow = Tasks('mow', 'med')
-# groceries = Tasks('groceries', 'low')
-
-# taskList = [run, mow, groceries]
-taskList = TaskListInit()
+taskList = importJSON()
+#ViewTask()
 Menu()
 
